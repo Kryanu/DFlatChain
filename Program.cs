@@ -28,6 +28,9 @@ app.MapGet("/viewPendingTransactions", () =>
 
 app.MapGet("/addTransaction", (string sender, string receiver, decimal amount, string description) =>
 {
+    //TODO:Add validation for description length <= 20
+    //TODO:Add validation for amount length <= 10
+
     Transaction transaction = new(sender, receiver, amount, description);
     if (currentBlock.Transactions.Count < 512)
     {
