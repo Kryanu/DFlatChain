@@ -3,25 +3,10 @@ using System.Linq;
 
 Blockchain blockchain = Blockchain.GetBlockchain();
 Block currentBlock = new("Genesis");
+ChainSystem.StartUp();
 
-Block MineBlock(ref Block current)
-{
-    current.SetHash();
-    string prev = "";
-    if(current.Hash != null)
-    {
-        prev = current.Hash;
-    }
-    blockchain.AppendChain(current);
-    Block mined = current;
-    current = new(prev);
-    return mined;
-}
 
 var builder = WebApplication.CreateBuilder(args);
-
-
-
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -36,8 +21,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
 app.MapGet("/viewPendingTransactions", () =>
 {
     return currentBlock.Transactions;
@@ -45,8 +28,8 @@ app.MapGet("/viewPendingTransactions", () =>
 
 app.MapGet("/addTransaction", (string sender, string receiver, decimal amount, string description) =>
 {
-    Transaction transaction = new(sender,receiver,amount,description);
-    if(currentBlock.Transactions.Count < 512)
+    Transaction transaction = new(sender, receiver, amount, description);
+    if (currentBlock.Transactions.Count < 512)
     {
         currentBlock.Transactions.Add(transaction);
     }
@@ -56,8 +39,9 @@ app.MapGet("/addTransaction", (string sender, string receiver, decimal amount, s
 
 app.MapGet("/addBlock", () =>
 {
-    return MineBlock(ref currentBlock);
-    
+    currentBlock.PrepareBlockFormat();
+    return ChainSystem.MineBlock(ref currentBlock, ref blockchain);
+
 }).WithName("AddBlock");
 
 app.MapGet("/getBlockchain", () =>

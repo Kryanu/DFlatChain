@@ -1,16 +1,16 @@
-﻿using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text;
 using System.Transactions;
 using System.Xml;
 using DFlatChain;
-using Newtonsoft.Json;
-using Formatting = Newtonsoft.Json.Formatting;
 
 namespace DFlatChain
 {
     public class Block
     {
+        private readonly long MaxLength = 98304;
         public string PreviousHash { get; set; }
-        public DateTime TimeStamp { get; set; }
+        public string TimeStamp { get; set; }
         public List<Transaction> Transactions { get; set; }
         public string? Hash { get; set; }
 
@@ -18,16 +18,16 @@ namespace DFlatChain
 
         public Block(string previousHash)
         {
-            Random random = new Random();
+            Random random = new();
             PreviousHash = previousHash;
-            TimeStamp = DateTime.Now;
+            TimeStamp = DateTime.Now.ToString("MM/dd/yyyy H:mm");
             Transactions = new List<Transaction>();
             Nonce = random.Next(100);
         }
 
         public void SetHash()
         {
-            Hash = Helpers.GetHash(Serialize(this));
+            Hash = Helpers.GetHash(ToMinimalString(),true);
         }
 
         public override string ToString()
@@ -52,15 +52,22 @@ namespace DFlatChain
 
         private string ToMinimalString()
         {
-            //JsonConvert.SerializeObject(Transactions, Formatting.Indented);
-            return $"{PreviousHash}{TimeStamp}{Nonce}{Helpers.SerializeArray(Transactions)}";
+            return $"{PreviousHash}{TimeStamp}{Nonce}{Helpers.SerializeArray(Transactions,false)}";
         }
-
-        private static Byte[] Serialize(Block block)
+        /*
+            PreviousHash 64:Hash Length
+            Hash 64: Hash Length
+            TimeStamp 15: Time Length
+            Nonce: 3: 100.length == 3: true
+            Transactions: 91,136: 178 * 512
+            Total 91282 -> Block Length
+            Total Space allocated: 98,304 = (2^17 - 2^15)
+        */
+        public string PrepareBlockFormat()
         {
-            return Helpers.StringToByte(block.ToMinimalString());
+            //Block is being serialised and padded to fit the predetermined block size
+            return $"{PreviousHash}#{TimeStamp}`{Nonce}%{Hash}[{Helpers.SerializeArray(Transactions, true)}]".PadRight((int)MaxLength);
         }
-    }
 
-    
+    }
 }

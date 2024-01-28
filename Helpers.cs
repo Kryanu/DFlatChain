@@ -18,14 +18,20 @@ namespace DFlatChain
             return Encoding.ASCII.GetBytes(input);
         }
 
-        public static string GetHash(byte[] input)
+        public static string GetHash(string input, bool Is256)
         {
             Byte[] hashBytes;
-            string test = ByteToString(input);
-            using (SHA256 algorithm = SHA256.Create())
+            if (Is256)
             {
-                hashBytes = algorithm.ComputeHash(input);
+                using SHA256 algorithm = SHA256.Create();
+                hashBytes = algorithm.ComputeHash(StringToByte(input));
             }
+            else
+            {
+                using SHA1 algorithm = SHA1.Create();
+                hashBytes = algorithm.ComputeHash(StringToByte(input));
+            }
+
             return ByteArrayToString(hashBytes);
         }
 
@@ -34,7 +40,7 @@ namespace DFlatChain
             return BitConverter.ToString(ba).Replace("-", "");
         }
 
-        public static string SerializeArray(List<Transaction> transactions)
+        public static string SerializeArray(List<Transaction> transactions, bool IsFormatted)
         {
             //Guard Clause
             if(transactions.All<Transaction>(trans => trans == null))
@@ -45,7 +51,12 @@ namespace DFlatChain
             StringBuilder stringBuilder = new();
             foreach (Transaction item in transactions)
             {
-                stringBuilder.Append(item.ToMinimalString());
+                if(IsFormatted){
+                    stringBuilder.Append(item.ToFormattedString());
+                }else {
+                    stringBuilder.Append(item.ToMinimalString());
+                }
+                //Used for split when formatting for saving
                 stringBuilder.Append(',');
             }
             stringBuilder.Length -= 2; // Remove the trailing comma and space

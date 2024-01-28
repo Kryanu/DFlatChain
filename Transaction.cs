@@ -4,7 +4,6 @@ namespace DFlatChain
 {
     public class Transaction
     {
-        public DateTime Time { get; set; }
         public string SenderAddress { get; set; }
         public string ReceiverAddress { get; set; }
         public decimal Amount { get; set;  }
@@ -13,19 +12,17 @@ namespace DFlatChain
 
         public Transaction(string senderAddress, string receiverAddress, decimal amount, string description)
         {
-            Time = DateTime.Now;
-            SenderAddress = senderAddress;
-            ReceiverAddress = receiverAddress;
+            SenderAddress = Helpers.GetHash(senderAddress, false);
+            ReceiverAddress = Helpers.GetHash(receiverAddress, false);
             Amount = amount;
             Description = description;
-            Hash = Helpers.GetHash(Serialize(this));
+            Hash = Helpers.GetHash(ToMinimalString(),true);
         }
 
         public override string ToString()
         {
             StringBuilder stringBuilder = new StringBuilder();
 
-            stringBuilder.AppendLine($"Time: {Time}");
             stringBuilder.AppendLine($"SenderAddress: {SenderAddress}");
             stringBuilder.AppendLine($"ReceiverAddress: {ReceiverAddress}");
             stringBuilder.AppendLine($"Amount: {Amount}");
@@ -37,12 +34,18 @@ namespace DFlatChain
 
         public string ToMinimalString()
         {
-            return $"{Time}{SenderAddress}{ReceiverAddress}{Amount}{Description}{Hash}";
+            return $"{SenderAddress}{ReceiverAddress}{Amount}{Description}{Hash}";
         }
-
-        private static Byte[] Serialize(Transaction transaction)
-        {
-            return Helpers.StringToByte(transaction.ToMinimalString());
+        /* 
+            Length: 4: seperator char
+            Amount 10: 9999999999 <- Max Value for amount
+            Description 20: Keep it short
+            Hash 64: Hash Length
+            Sender & Receiver 80: Hash Length
+            Total 178
+        */
+        public string ToFormattedString() {
+            return  $"{SenderAddress}-{ReceiverAddress}-{Amount}-{Description}-{Hash}";   
         }
     }
 }
