@@ -1,26 +1,24 @@
 ﻿using System.Text;
 
-namespace DFlatChain
-{
-    public class Transaction
-    {
+namespace DFlatChain {
+    public class Transaction {
         public string SenderAddress { get; set; }
         public string ReceiverAddress { get; set; }
-        public decimal Amount { get; set;  }
+        public decimal Amount { get; set; }
         public string Description { get; set; }
         public string Hash { get; set; }
 
-        public Transaction(string senderAddress, string receiverAddress, decimal amount, string description)
-        {
+        public Transaction(string senderAddress, string receiverAddress, decimal amount, string description) {
             SenderAddress = Helpers.GetHash(senderAddress, false);
             ReceiverAddress = Helpers.GetHash(receiverAddress, false);
             Amount = amount;
             Description = description;
-            Hash = Helpers.GetHash(ToMinimalString(),true);
+            Hash = Helpers.GetHash(ToMinimalString(), true);
         }
-
-        public override string ToString()
-        {
+        public Transaction(string hash) {
+            Hash = hash;
+        }
+        public override string ToString() {
             StringBuilder stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine($"SenderAddress: {SenderAddress}");
@@ -32,8 +30,7 @@ namespace DFlatChain
             return stringBuilder.ToString();
         }
 
-        public string ToMinimalString()
-        {
+        public string ToMinimalString() {
             return $"{SenderAddress}{ReceiverAddress}{Amount}{Description}{Hash}";
         }
         /* 
@@ -45,7 +42,7 @@ namespace DFlatChain
             Total 178
         */
         public string ToFormattedString() {
-            return  $"{SenderAddress}-{ReceiverAddress}-{Amount}-{Description}-{Hash}";   
+            return $"{SenderAddress}-{ReceiverAddress}-{Amount}-{Description}-{Hash}";
         }
     }
 }

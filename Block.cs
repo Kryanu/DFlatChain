@@ -4,10 +4,8 @@ using System.Transactions;
 using System.Xml;
 using DFlatChain;
 
-namespace DFlatChain
-{
-    public class Block
-    {
+namespace DFlatChain {
+    public class Block {
         private readonly long MaxLength = 98304;
         public string PreviousHash { get; set; }
         public string TimeStamp { get; set; }
@@ -16,8 +14,7 @@ namespace DFlatChain
 
         public int Nonce { get; set; }
 
-        public Block(string previousHash)
-        {
+        public Block(string previousHash) {
             Random random = new();
             PreviousHash = previousHash;
             TimeStamp = DateTime.Now.ToString("MM/dd/yyyy H:mm");
@@ -25,21 +22,18 @@ namespace DFlatChain
             Nonce = random.Next(100);
         }
 
-        public void SetHash()
-        {
-            Hash = Helpers.GetHash(ToMinimalString(),true);
+        public void SetHash() {
+            Hash = Helpers.GetHash(ToMinimalString(), true);
         }
 
-        public override string ToString()
-        {
+        public override string ToString() {
             StringBuilder stringBuilder = new();
 
             stringBuilder.AppendLine($"PreviousHash: {PreviousHash}");
             stringBuilder.AppendLine($"TimeStamp: {TimeStamp}");
             stringBuilder.AppendLine("Transactions:");
 
-            foreach (var transaction in Transactions)
-            {
+            foreach (var transaction in Transactions) {
                 stringBuilder.AppendLine($"  {transaction}");
                 stringBuilder.AppendLine("--------------");
             }
@@ -50,9 +44,8 @@ namespace DFlatChain
             return stringBuilder.ToString();
         }
 
-        private string ToMinimalString()
-        {
-            return $"{PreviousHash}{TimeStamp}{Nonce}{Helpers.SerializeArray(Transactions,false)}";
+        private string ToMinimalString() {
+            return $"{PreviousHash}{TimeStamp}{Nonce}{Helpers.SerializeArray(Transactions, false)}";
         }
         /*
             PreviousHash 64:Hash Length
@@ -63,8 +56,7 @@ namespace DFlatChain
             Total 91282 -> Block Length
             Total Space allocated: 98,304 = (2^17 - 2^15)
         */
-        public string PrepareBlockFormat()
-        {
+        public string PrepareBlockFormat() {
             //Block is being serialised and padded to fit the predetermined block size
             return $"{PreviousHash}#{TimeStamp}`{Nonce}%{Hash}[{Helpers.SerializeArray(Transactions, true)}]".PadRight((int)MaxLength);
         }

@@ -15,48 +15,56 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.MapGet("/viewPendingTransactions", () =>
-{
+app.MapGet("/viewPendingTransactions", () => {
     return currentBlock.Transactions;
 }).WithName("ViewPendingTransactions");
 
-app.MapGet("/addTransaction", (string sender, string receiver, decimal amount, string description) =>
-{
+app.MapGet("/addTransaction", (string sender, string receiver, decimal amount, string description) => {
     //TODO:Add validation for description length <= 20
     //TODO:Add validation for amount length <= 10
 
     Transaction transaction = new(sender, receiver, amount, description);
-    if (currentBlock.Transactions.Count < 512)
-    {
+    if (currentBlock.Transactions.Count < 512) {
         currentBlock.Transactions.Add(transaction);
     }
     return transaction;
 
 }).WithName("AddTransaction");
 
-app.MapGet("/addBlock", () =>
-{
+app.MapGet("/addBlock", () => {
     currentBlock.PrepareBlockFormat();
     return ChainSystem.MineBlock(ref currentBlock, ref blockchain);
 
 }).WithName("AddBlock");
 
-app.MapGet("/getBlockchain", () =>
-{
+app.MapGet("/getBlockchain", () => {
     return blockchain.GetChain();
 })
 .WithName("GetBlockchain");
 
-app.MapGet("/isChainValid", () =>
-{
+app.MapGet("/isChainValid", () => {
     return blockchain.IsChainValid(blockchain.GetChain(), currentBlock.PreviousHash, blockchain.GetChain().Length - 1);
 }).WithName("getIsChainValid");
+
+app.MapGet("/SaveChainToFile", () => {
+    try {
+        ChainSystem.SaveChainToFile(blockchain);
+        return "Success";
+    } catch {
+        return "Failed";
+    }
+}).WithName("SaveChainToFile");
+//To remove when serialisation is done
+app.MapGet("testCalculateMerkleHash", () => {
+    
+    return Merkle.GenerateTree(currentBlock.Transactions.ToArray());
+
+}).WithName("calcHash");
 
 app.Run();
 
