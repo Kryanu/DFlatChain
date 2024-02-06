@@ -46,6 +46,6 @@ namespace DFlatChain {
             return mined;
         }
 
-
+        
     }
 }

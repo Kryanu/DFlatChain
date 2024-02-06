@@ -3,6 +3,25 @@ using System.Linq;
 
 Blockchain blockchain = Blockchain.GetBlockchain();
 Block currentBlock = new("Genesis");
+
+Transaction AddTransaction(string sender, string receiver, decimal amount, string description) {
+    
+    if (amount.ToString().Length > 10) {
+        throw new Exception("Amount is too large");
+    }
+    if (description.Length > 20) {
+        throw new Exception("Description is too long");
+    }
+
+    Transaction transaction = new(sender, receiver, amount, description);
+    if (currentBlock.Transactions.Count < 512) {
+        currentBlock.Transactions.Add(transaction);
+    }else {
+        //TODO: Mineblock
+    }
+    return transaction;
+}
+
 ChainSystem.StartUp();
 
 
@@ -25,19 +44,12 @@ app.MapGet("/viewPendingTransactions", () => {
 }).WithName("ViewPendingTransactions");
 
 app.MapGet("/addTransaction", (string sender, string receiver, decimal amount, string description) => {
-    //TODO:Add validation for description length <= 20
-    //TODO:Add validation for amount length <= 10
-
-    Transaction transaction = new(sender, receiver, amount, description);
-    if (currentBlock.Transactions.Count < 512) {
-        currentBlock.Transactions.Add(transaction);
-    }
-    return transaction;
+    return AddTransaction(sender, receiver, amount, description);
 
 }).WithName("AddTransaction");
 
 app.MapGet("/addBlock", () => {
-    currentBlock.PrepareBlockFormat();
+    byte[] test = Helpers.Compress(currentBlock.PrepareBlockFormat());   
     return ChainSystem.MineBlock(ref currentBlock, ref blockchain);
 
 }).WithName("AddBlock");
@@ -59,12 +71,7 @@ app.MapGet("/SaveChainToFile", () => {
         return "Failed";
     }
 }).WithName("SaveChainToFile");
-//To remove when serialisation is done
-app.MapGet("testCalculateMerkleHash", () => {
-    
-    return Merkle.GenerateTree(currentBlock.Transactions.ToArray());
 
-}).WithName("calcHash");
 
 app.Run();
 

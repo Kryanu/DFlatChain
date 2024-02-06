@@ -1,4 +1,5 @@
-﻿namespace DFlatChain {
+﻿using Newtonsoft.Json;
+namespace DFlatChain {
     public class Merkle {
         public Merkle? left { get; set; }
         public Merkle? right { get; set; }
@@ -12,6 +13,18 @@
 
         public Merkle(string hash) {
             this.hash = hash;
+        }
+
+        public Merkle() {
+
+        }
+        public static string Serialize(Merkle node) {
+            return JsonConvert.SerializeObject(node);
+        }
+
+        // Deserialize a JSON string to a Merkle tree
+        public static Merkle Deserialize(string json) {
+            return JsonConvert.DeserializeObject<Merkle>(json);
         }
 
         public static Merkle GenerateTree(Transaction[] transactions) {
@@ -36,8 +49,8 @@
                 return new Merkle(nodes[0], nodes[1]);
             }
             Merkle[] tempNodes = new Merkle[nodes.Length / 2];
-            for (int i = 0; i < nodes.Length; ) {
-                tempNodes[i/2] = new(nodes[i], nodes[i + 1]);
+            for (int i = 0; i < nodes.Length;) {
+                tempNodes[i / 2] = new(nodes[i], nodes[i + 1]);
                 i += 2;
             }
 
